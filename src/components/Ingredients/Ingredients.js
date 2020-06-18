@@ -7,11 +7,18 @@ import IngredientList from './IngredientList'
 function Ingredients() {
   const [userIngredients, setUserIngredients] = useState([]);
 
-  const addIngredientHandler = ingredients => {
-    setUserIngredients(prevIngredients => [
-      ...prevIngredients,
-      { id: Math.random().toString(), ...ingredients }
-    ]);
+  const addIngredientHandler = ingredient => {
+    fetch(`${process.env.REACT_APP_FIREBASE_URL}/ingredients.json`, {
+      method: 'POST',
+      body: JSON.stringify(ingredient),
+      headers: { 'Content-Type': 'application/json'}
+    }).then(response => response.json())
+    .then(responseData => {
+      setUserIngredients(prevIngredients => [
+        ...prevIngredients,
+        { id: responseData.name, ...ingredient}
+      ]);
+    })
   }
 
   return (
