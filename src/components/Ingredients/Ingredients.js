@@ -7,8 +7,6 @@ import IngredientList from './IngredientList'
 function Ingredients() {
   const [userIngredients, setUserIngredients] = useState([]);
 
-
-
   useEffect(() => {
     fetch(`${process.env.REACT_APP_FIREBASE_URL}/ingredients.json`)
       .then(response => response.json())
@@ -24,7 +22,11 @@ function Ingredients() {
         setUserIngredients(loadedIngredients);
       });
   }, [])
-
+  
+  useEffect(() => {
+    console.log('RENDERING INGREDIENTS', userIngredients)
+  }, [userIngredients])
+  
   const addIngredientHandler = ingredient => {
     fetch(`${process.env.REACT_APP_FIREBASE_URL}/ingredients.json`, {
       method: 'POST',
@@ -45,12 +47,15 @@ function Ingredients() {
     )
   }
 
+  const filteredIngredientsHandler = filteredIngredients => 
+      setUserIngredients(filteredIngredients);
+
   return (
     <div className="App">
       <IngredientForm onAddIngredient={addIngredientHandler} />
 
       <section>
-        <Search />
+        <Search onLoadIngredients={filteredIngredientsHandler}/>
        <IngredientList 
           ingredients={userIngredients} 
           onRemoveItem={removeIngredientHandler} />
