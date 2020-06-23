@@ -26,9 +26,16 @@ function Ingredients() {
   }
 
   const removeIngredientHandler = ingredientId => {
-    setUserIngredients(prevIngredients => 
-      prevIngredients.filter(ing => ing.id !== ingredientId)
+    fetch(`${process.env.REACT_APP_FIREBASE_URL}/ingredients/${ingredientId}.json`, 
+    {
+      method: 'DELETE'
+    }
     )
+        .then(response => {
+          setUserIngredients(prevIngredients => 
+            prevIngredients.filter(ing => ing.id !== ingredientId)
+          )
+        }); 
   }
 
   const filteredIngredientsHandler = useCallback(filteredIngredients => {
