@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useEffect, useCallback } from "react";
+import React, { useReducer, useEffect, useCallback } from "react";
 
 import IngredientForm from "./IngredientForm";
 import Search from "./Search";
@@ -20,18 +20,35 @@ const ingredientReducer = (currentIngredients, action) => {
   }
 };
 
+const httpReducer = (curHttpState, action) => {
+  switch (action.type) {
+    case "SEND":
+      return { loading: true, error: false };
+    case "RESPONSE":
+      return { ...curHttpState, loading: false };
+    case "ERROR":
+      return { loading: false, error: action.errorMessage };
+    case "CLEAR":
+      return { ...curHttpState, error: null };
+    default:
+      throw new Error("Shold not be reached");
+  }
+};
+
 function Ingredients() {
   const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
-  // const [userIngredients, setUserIngredients] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
+  const [httpState, dispatchHttp] = useReducer(httpReducer, {
+    loading: false,
+    error: null,
+  });
 
   useEffect(() => {
     console.log("RENDERING INGREDIENTS", userIngredients);
   }, [userIngredients]);
 
   const addIngredientHandler = (ingredient) => {
-    setIsLoading(true);
+    /* setIsLoading(true); */
+    dispatchHttp({ type: "SEND" });
     fetch(`${process.env.REACT_APP_FIREBASE_URL}/ingredients.json`, {
       method: "POST",
       body: JSON.stringify(ingredient),
@@ -39,7 +56,8 @@ function Ingredients() {
     })
       .then((response) => response.json())
       .then((responseData) => {
-        setIsLoading(false);
+        /* setIsLoading(false); */
+        dispatchHttp({ type: "RESPONSE" });
         /*  setUserIngredients(prevIngredients => [
         ...prevIngredients,
         { id: responseData.name, ...ingredient}
@@ -52,7 +70,8 @@ function Ingredients() {
   };
 
   const removeIngredientHandler = (ingredientId) => {
-    setIsLoading(true);
+    /* setIsLoading(true); */
+    dispatchHttp({ type: "SEND" });
     fetch(
       `${process.env.REACT_APP_FIREBASE_URL}/ingredients/${ingredientId}.json`,
       {
@@ -60,14 +79,16 @@ function Ingredients() {
       }
     )
       .then((response) => {
-        setIsLoading(false);
+        /* setIsLoading(false); */
+        dispatchHttp({ type: "RESPONSE" });
         /*  setUserIngredients(prevIngredients => 
             prevIngredients.filter(ing => ing.id !== ingredientId)
           ) */
         dispatch({ type: "DELETE", id: ingredientId });
       })
       .catch((err) => {
-        setError("Something went wrong");
+        /* setError("Something went wrong"); */
+        dispatchHttp({ type: "ERROR", errorMessage: "Something went wrong" });
       });
   };
   const filteredIngredientsHandler = useCallback((filteredIngredients) => {
@@ -76,15 +97,18 @@ function Ingredients() {
   }, []);
 
   const clearError = () => {
-    setError(null);
-    setIsLoading(false);
+    /* setError(null);
+    setIsLoading(false); */
+    dispatchHttp({ type: "CLEAR" });
   };
   return (
     <div className="App">
-      {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+      {httpState.error && (
+        <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>
+      )}
       <IngredientForm
         onAddIngredient={addIngredientHandler}
-        loading={isLoading}
+        loading={httpState.loading}
       />
       <section>
         <Search onLoadIngredients={filteredIngredientsHandler} />
