@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import './IngredientList.css';
 
 const IngredientList = props => {
+
+  useEffect(() => {
+    console.log('CLICK CHANGED')
+  }, [props.onRemoveItem])
+
   return (
     <section className="ingredient-list">
       <h2>Loaded Ingredients</h2>
